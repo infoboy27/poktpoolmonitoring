@@ -8,8 +8,7 @@ global:
   # Attach these labels to any time series or alerts when communicating with
   # external systems (federation, remote storage, Alertmanager).
   external_labels:
-      monitor: 'my-project'
-
+      monitor: 'poktpool-monitoring'
 
 alerting:
   alertmanagers:
@@ -38,27 +37,16 @@ scrape_configs:
       - targets:
         - blackbox:9115   # For Windows and macOS replace with - host.docker.internal:9115
 
-
-  - job_name: 'canopy'
-    static_configs:
-      - targets:
-        - node1:9090
-        - node2:9090
-        - node3:9090
-
-
-  - job_name: 'blackbox_explorer_wallet_check'
+  - job_name: 'blackbox_poktpool_website_check'
     metrics_path: /probe
     params:
-      module: [http_200]  # Look for a HTTP 200 response.
+      module: [poktpool_website_check]  # Look for POKTpool website content
     tls_config:
       insecure_skip_verify: true
     static_configs:
       - targets:
-        - http://node1:50000    # Target to probe with http.
-        - http://node1:50001    # Target to probe with http.
-        - http://node2:40000    # Target to probe with http.
-        - http://node2:40001    # Target to probe with http.
+        - https://poktpool.com    # Main website
+        - https://www.poktpool.com # www subdomain
     relabel_configs:
       - source_labels: [__address__]
         target_label: __param_target
@@ -67,19 +55,33 @@ scrape_configs:
       - target_label: __address__
         replacement: "blackbox:9115"  # Blackbox exporter.
       - target_label: region
-        replacement: "local"
+        replacement: "production"
 
-  - job_name: 'blackbox_rpc_height'
+  - job_name: 'blackbox_poktpool_api_check'
     metrics_path: /probe
     params:
-      module: [check_canopy_block_2xx]  # Look for a HTTP 200 response.
+      module: [poktpool_api_check]  # Look for POKTpool API endpoints
     tls_config:
       insecure_skip_verify: true
     static_configs:
       - targets:
-        - http://node1:50002/v1/query/height    # Target to probe with http.
-        - http://node2:40002/v1/query/height   # Target to probe with http.
-        # targets here
+        - https://poktpool.com/api/health    # API health endpoint (if exists)
+        - https://poktpool.com/status        # Status endpoint (if exists)
+    relabel_configs:
+      - source_labels: [__address__]
+        target_label: __param_target
+      - source_labels: [__param_target]
+        target_label: instance
+      - target_label: __address__
+        replacement: "blackbox:9115"
+
+  - job_name: 'blackbox_poktpool_ssl_check'
+    metrics_path: /probe
+    params:
+      module: [https_connect]  # Check SSL/TLS connectivity
+    static_configs:
+      - targets:
+        - https://poktpool.com
     relabel_configs:
       - source_labels: [__address__]
         target_label: __param_target

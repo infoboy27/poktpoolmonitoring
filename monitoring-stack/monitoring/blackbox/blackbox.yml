@@ -2,27 +2,9 @@ modules:
   http_2xx:
     prober: http
     timeout: 5s
-
     http:
       method: GET
       preferred_ip_protocol: "ip4"
-
-  check_block_2xx:
-    prober: http
-    timeout: 5s
-    http:
-      valid_http_versions: ["HTTP/1.1", "HTTP/2.0"]
-      valid_status_codes:
-        - 200
-        - 201
-      method: POST
-      headers: 
-        content-type: application/json
-      body: '{"jsonrpc":"2.0","method":"eth_blockNumber","params":[],"id":83}'
-      preferred_ip_protocol: "ip4"
-      ip_protocol_fallback: false
-      fail_if_body_not_matches_regexp: [".*result.*"]
-
 
   http_200:
     prober: http
@@ -43,17 +25,54 @@ modules:
         insecure_skip_verify: false
       preferred_ip_protocol: "ip4" # defaults to "ip6"
 
-  check_canopy_block_2xx:
+  https_connect:
     prober: http
     timeout: 5s
     http:
-      valid_http_versions: ["HTTP/1.1", "HTTP/2.0"]
+      method: GET
+      fail_if_ssl: false
+      fail_if_not_ssl: true
+      tls_config:
+        insecure_skip_verify: false
+      preferred_ip_protocol: "ip4"
+
+  poktpool_website_check:
+    prober: http
+    timeout: 10s
+    http:
+      valid_http_versions: ["HTTP/1.1", "HTTP/2"]
       valid_status_codes:
         - 200
         - 201
-      method: POST
-      headers: 
-        content-type: application/json
-      body: '{}'
+        - 301
+        - 302
+      method: GET
+      headers:
+        User-Agent: "Mozilla/5.0 (blackbox_exporter) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/72.0.3626.109 Safari/537.36"
+        Accept: "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8"
+        Accept-Language: 'en-US,en;q=0.9'
+      fail_if_ssl: false
+      fail_if_not_ssl: true
+      tls_config:
+        insecure_skip_verify: false
       preferred_ip_protocol: "ip4"
-      ip_protocol_fallback: false
+      # Check for POKTpool specific content
+      fail_if_body_not_matches_regexp: [".*poktpool.*", ".*POKT.*"]
+
+  poktpool_api_check:
+    prober: http
+    timeout: 5s
+    http:
+      valid_http_versions: ["HTTP/1.1", "HTTP/2"]
+      valid_status_codes:
+        - 200
+        - 201
+      method: GET
+      headers:
+        User-Agent: "Mozilla/5.0 (blackbox_exporter) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/72.0.3626.109 Safari/537.36"
+        Accept: "application/json"
+      fail_if_ssl: false
+      fail_if_not_ssl: true
+      tls_config:
+        insecure_skip_verify: false
+      preferred_ip_protocol: "ip4"

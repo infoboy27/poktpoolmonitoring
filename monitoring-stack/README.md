@@ -1,30 +1,20 @@
-# Canopy monitoring stack overview
+# POKTpool monitoring stack overview
 
+This docker-compose.yaml contains a comprehensive monitoring stack for monitoring poktpool.com and related services. The stack includes Prometheus, Grafana, Loki for log aggregation, and various exporters for infrastructure monitoring.
 
-This  docker-compose.yaml contains the following software stack for production grade and monitoring purposes; prometheus, grafana for monitoring and cadvisor and node-exporter for container and server metrics respectively and traefik for loadbalancing purposes
-
-We added a [.env](./.env) which is the file we use to parametrice all configurations in order to setup your personal canopy monitoring stack. It is intented to run by default for local testing but can be easily modified via .env variable to be configured for more robust staging/production purposes
-
-
+We added a [.env](./.env) which is the file we use to parametrize all configurations in order to setup your personal POKTpool monitoring stack. It is intended to run by default for local testing but can be easily modified via .env variable to be configured for more robust staging/production purposes.
 
 ## Setup
 
 ### System Requirements
 
-
 #### Complete Monitoring Stack
-- **Minimum**: 8GB RAM | 4vCPU | 100GB storage
-- **Recommended**: 16GB RAM | 8vCPU | 250GB storage
+- **Minimum**: 4GB RAM | 2vCPU | 50GB storage
+- **Recommended**: 8GB RAM | 4vCPU | 100GB storage
 
 **Component-specific requirements:**
 
-
-#### Canopy Nodes
-- **Minimum**: 4GB RAM | 2vCPU | 25GB storage
-- **Recommended**: 8GB RAM | 4vCPU | 100GB storage
-
 #### Monitoring components
-
 - **Prometheus**: 1GB RAM | 1vCPU | 20GB storage (for metrics storage)
 - **Grafana**: 512MB RAM | 1vCPU | 5GB storage (for dashboards and UI)
 - **Loki**: 1GB RAM | 1vCPU | 20GB storage (for log storage)
@@ -35,29 +25,23 @@ We added a [.env](./.env) which is the file we use to parametrice all configurat
 
 ### .env 
 
-Copy the env variable as example in order to activate it's usage 
+Copy the env variable as example in order to activate its usage 
 
 ```bash
-
 cp .env.template .env
-
 ```
 
 ### Grafana loki plugin
 
 Install the loki plugin so all of our logs can be ingested by loki 
 
-
-``` bash
-
-sudo docker plugin install  grafana/loki-docker-driver --alias loki
-
+```bash
+sudo docker plugin install grafana/loki-docker-driver --alias loki
 ```
-
 
 ### Grafana notification channels
 
-In order to correctly receive the infrastructure and canopy alerts on this setup stack you should configure the discord and the pagerduty notification channel configs:
+In order to correctly receive the infrastructure and POKTpool alerts on this setup stack you should configure the discord and the pagerduty notification channel configs:
 
 [Discord channel webhook](./monitoring/grafana/provisioning/alerting/discord-alert.yaml#L28)
 
@@ -67,19 +51,11 @@ In order to correctly receive the infrastructure and canopy alerts on this setup
 
 This section describes the ports opened externally and internally by this setup. 
 
-Make sure you open the external ports in order to properly configure canopy 
-
-External ports
-
-#### Canopy Node Ports
-- **9001**: TCP P2P communication for node1
-- **9002**: TCP P2P communication for node2
+Make sure you open the external ports in order to properly configure POKTpool monitoring.
 
 #### Load Balancer Ports
 - **80**: HTTP traffic (redirects to HTTPS in production)
 - **443**: HTTPS traffic (SSL/TLS)
-
-Internal ports
 
 #### Monitoring Ports
 - **3000**: Grafana web interface
@@ -90,102 +66,36 @@ Internal ports
 - **8080**: cAdvisor container metrics
 - **9100**: Node exporter host metrics
 
-#### Canopy service Ports
-- **50000**: Wallet service for node1 (exposed via Traefik)
-- **50001**: Explorer service for node1 (exposed via Traefik)
-- **50002**: RPC service for node1 (exposed via Traefik)
-- **50003**: Admin RPC service for node1 (exposed via Traefik)
-- **40000**: Wallet service for node2 (exposed via Traefik)
-- **40001**: Explorer service for node2 (exposed via Traefik)
-- **40002**: RPC service for node2 (exposed via Traefik)
-- **40003**: Admin RPC service for node2 (exposed via Traefik)
-
 ## Running
-
 
 ### Local
 
 ```bash
-
 sudo make up
-
 ```
 
-If you like to start from the most recent snapshot for canopy mainnet full nodechainID 1 and chainID 2, you should consider using
+This stack runs the following local monitoring services:
 
-```bash
-
-sudo make start_with_snapshot
-
-```
-
-
-This stack runs the following local and production services:
-
-- http://wallet.node1.localhost/
-	user: canopy, pass:canopy (production usage)
-- http://explorer.node1.localhost/
-- http://rpc.node1.localhost/
-- http://adminrpc.node1.localhost/
-
-- http://wallet.node2.localhost/
-(password protected by canopy:canopy)
-- http://explorer.node2.localhost/
-- http://rpc.node1.localhost/
-- http://adminrpc.node1.localhost/
-
-
-Grafana monitorign service 
-
-- http://monitoring.localhost/
-	user: admin, pass: canopy
-
+- http://monitoring.localhost/ - Grafana monitoring interface
+  - user: admin, pass: admin (default)
 
 ### Clearing data
 
-
-This command clears all canopy nodes data for a hard reset of the environment
+This command clears all monitoring data for a hard reset of the environment
 
 ```bash
 sudo make reset
 ```
 
-
 ## Production
 
-
-This stack lets you run a semi-production deployment of the canopy stack by just changing a small number of settings shown below: 
-
+This stack lets you run a production deployment of the POKTpool monitoring stack by just changing a small number of settings shown below:
 
 ### Step 1: Define your env variables
- 
+
 #### $DOMAIN
 
-With a `DOMAIN` variable defined on [.env.template](/.env.template) traefik will expose and validate SSL on this endpoints externally using the prefix shown in the first running section  
-
-It will also properly configure to expose canopy nodes explorer, rpc and wallet services on the config.json files by using 
-[entrypoint.sh](../docker_image/entrypoint.sh)  on [node1 config.json](../canopy_data/node1/config.json) and [node2 config.json](../canopy_data/node2/config.json) 
-
-
-Node1 config.json
-```
-  "rpcURL": "https://rpc.node1.<YOUR_DOMAIN>:50002",
-
-  "adminRPCUrl": "https://adminrpc.node1.<YOUR_DOMAIN>:50003",
-
-  "externalAddress": "tcp://node1.<YOUR_DOMAIN>",
-```
-
-Node2 config.json
-
-```
-  "rpcURL": "https://rpc.node2.<YOUR_DOMAIN>:40002",
-  
-  "adminRPCUrl": "https://admin.node2.<YOUR_DOMAIN>:40003",
-
-  "externalAddress": "tcp://node2.<YOUR_DOMAIN>",
-```
-
+With a `DOMAIN` variable defined on [.env.template](/.env.template) traefik will expose and validate SSL on this endpoints externally.
 
 #### $ACME_EMAIL
 
@@ -193,97 +103,42 @@ We use this env variable to request SSL ACME certificate during [traefik HTTPS v
 
 For more information check the Traefik section below
 
+### Step 2: Configure your DNS
 
+Your domain should point to your production server:
 
-### Step 3:  Configure your DNS
+*.monitoring.<YOUR_DOMAIN> A record -> ||YOUR IP||
 
+Once it's done, make sure your DNS are properly configured so traefik can request the SSL certificates and expose your monitoring services under your domain.
 
-Your domain should point to your production server under a wild card subdomain as shown:
+### Step 3: Open external ports
 
-*.node1.<YOUR_DOMAIN> A record -> ||YOUR IP||
-
-*.node2.<YOUR_DOMAIN> A Record -> ||YOUR IP||
-
-
-Once it's done, make sure your DNS are properly configured so traefik can request the SSL certificates and expose your canopy and monitoring services under your domain
-
-
-### Step 4: Open external ports
-
-
-As described in the ports section, canopy requires the following ports opened in order for canopy and traefik to work:
-
-
-#### Canopy Node Ports
-- **9001**: TCP P2P communication for node1
-- **9002**: TCP P2P communication for node2
+As described in the ports section, the monitoring stack requires the following ports opened:
 
 #### Load Balancer Ports
 - **80**: HTTP traffic (redirects to HTTPS in production)
 - **443**: HTTPS traffic (SSL/TLS)
 
-
 You should be able to expose this ports via your cloud provider and/or by opening as well ufw as described below
 
 #### Firewall Configuration Example (UFW)
 ```bash
-# Canopy P2P ports
-sudo ufw allow 9001/tcp
-sudo ufw allow 9002/tcp
-
 # Load balancer ports
 sudo ufw allow 80/tcp
 sudo ufw allow 443/tcp
 ```
 
-
-### Step 5: Define BASIC AUTH
-
-By default wallet and explorer endpoints are sensitive endpoints accessed using basic AUTH with the following default password
-
-```
-username: canopy
-
-passwd: canopy 
-```
-
-It's mandatory to change this default passwords since wallet/explorer endpoints are SENSITIVES for securing your validator
- 
-For customizing the loadbalancer basic auth access for production purposes on wallet production endpoints, create a custom password using the following command:
-
-``` bash
-htpasswd -nb  canopy canopy
-```
-
-Which will print a username and a hashed password that you need to replace it on [middleware.yaml](./loadbalancer/services/middleware.yaml)
-
-After you save this file, traefik will automatically reload and allow the new password to be used right away on your production environment
-
-```
-IMPORTANT: WE DO NOT RECOMMEND exposing wallet endpoint without making sure you are securing your validator 
-```
-
-### Step 6: Run
-
+### Step 4: Run
 
 ```bash
-
 sudo make up
-
 ```
 
-Traefik will take sometime for requesting the SSL Certificates and will expose the services accordingly with the prefix described in the # Running section of this document 
-
-We recommend to check the traefik section below on the Monitoring stack configuration for additonal modifications  
-
-```
-DISCLAIMER
-This semi-production monitoring setup guide which doesn't include security measures over your server security or canopy key management make sure you take your own measures to secure them 
-```
+Traefik will take some time for requesting the SSL Certificates and will expose the services accordingly.
 
 ## Monitoring stack configuration
 
-Below you will find the configuration file references and instructions in order to understand and customize the current setup
+Below you will find the configuration file references and instructions in order to understand and customize the current setup.
 
 You can also find additional documentation below regarding the current setup:
 
@@ -291,74 +146,81 @@ You can also find additional documentation below regarding the current setup:
 
 [Alert documentation](./ALERTS.md)
 
-
 ### Grafana
 
-Grafana comes with defaults dashboard described below along with their configuration files and some other env variables described on (.env)[.env]
+Grafana comes with default dashboards described below along with their configuration files and some other env variables described on (.env)[.env]
+
+#### - [POKTpool dashboard](http://localhost:3000/d/poktpool-monitoring/poktpool-monitoring-dashboard?orgId=1&from=now-1h&to=now&timezone=browser)
+
+Dashboard with POKTpool website monitoring metrics including availability, response times, SSL status, and API health.
 
 #### - [Blackbox dashboard](http://localhost:3000/d/xtkCtBkis/blackbox-exporter?var-interval=10s&orgId=1&from=now-15m&to=now&timezone=browser&var-target=$__all&var-source=$__all&var-destination=$__all&refresh=1m)
 
-Dashboard with blackbox metrics which continously tests the wallet, RPC, and explorer endpoints on the canopy nodes 
+Dashboard with blackbox metrics which continuously tests the POKTpool website and API endpoints.
 
 #### - [Cadvisor exporter](http://localhost:3000/d/pMEd7m0Mz/cadvisor-exporter?orgId=1&from=now-6h&to=now&timezone=browser&var-host=$__all&var-container=$__all&var-DS_PROMETHEUS=PBFA97CFB590B2093)
 
-Dashboard with resources metrics for docker containers
+Dashboard with resources metrics for docker containers.
 
 #### - [Node exporter](http://localhost:3000/d/rYdddlPWk/node-exporter-full?orgId=1&from=now-24h&to=now&timezone=browser&var-datasource=default&var-job=node-exporter&var-node=node-exporter:9100&var-diskdevices=%5Ba-z%5D%2B%7Cnvme%5B0-9%5D%2Bn%5B0-9%5D%2B%7Cmmcblk%5B0-9%5D%2B&refresh=1m)
 
-Dashboard with resource metrics for the host instance 
-
+Dashboard with resource metrics for the host instance.
 
 #### - [Traefik dashboard](http://localhost:3000/d/O23g2BeWk/traefik-dashboard?orgId=1&from=now-5m&to=now&timezone=browser&var-service=&var-entrypoint=$__all&refresh=5m)
 
-Dashboard with loadbalancer metrics
-
-#### - [Canopy dashboard](http://localhost:3000/d/fejf7y7gcnwg0e/canopy-dashboard?orgId=1&from=now-1h&to=now&timezone=browser&var-instance=node1:9090&var-instance=node2:9090) 
-
-Dashboard with canopy metrics for blocks, transactions, validators among other metrics
-
+Dashboard with loadbalancer metrics.
 
 #### - [Instance monitoring alerts](http://localhost:3000/d/KljDeaZ4z/blockchain-node-instance-dashboard?orgId=1&from=now-15m&to=now&timezone=browser&var-DS_PROMETHEUS=default&var-job=node-exporter)
 
-Dashboard with host container metrics 
+Dashboard with host container metrics.
 
 [dashboard folder](./monitoring/grafana/dashboards)
 [dashboard config](./monitoring/grafana/provisioning/dashboards/dashboard.yaml)
 [datasources config](./monitoring/grafana/provisioning/datasources/automatic.yaml)
 
+### Prometheus
 
-#### Prometheus
-
-Configuration it's mainly described on the prometheus.yml configuration file
+Configuration is mainly described on the prometheus.yml configuration file.
 
 [prometheus.yml](./monitoring/prometheus/prometheus.yml)
 
+The Prometheus configuration monitors:
+- POKTpool website availability (poktpool.com and www.poktpool.com)
+- POKTpool API endpoints (if available)
+- SSL certificate status
+- System metrics (CPU, memory, disk)
+- Container metrics
+- Load balancer metrics
 
-#### Cadvisor
+### Cadvisor
 
-Used for server metrics, we use the vanilla config which is described in docker-compose.yaml
+Used for server metrics, we use the vanilla config which is described in docker-compose.yaml.
 
-#### Node-exporter
+### Node-exporter
 
-Used for exporting node metrics, we use the vanilla config which is described in docker-compose.yaml
+Used for exporting node metrics, we use the vanilla config which is described in docker-compose.yaml.
 
-#### Blackbox
+### Blackbox
 
-We use blackbox for testing and monitoring wallet/explorer endpoints. We'll be adding more tests for rpc and adminrcp soon
+We use blackbox for testing and monitoring POKTpool website and API endpoints.
 
 [blackbox.yml](./monitoring/blackbox/blackbox.yml)
 
+The blackbox exporter monitors:
+- Website availability and response times
+- SSL certificate validity
+- API endpoint health
+- Content verification (checking for POKTpool-specific content)
 
-#### Traefik 
+### Traefik
 
-As mentioned, we use traefik as loadbalancer for exposing canopy and monitoring software on two setups local and production with 2 nodes which can be accessed on the URLS described in the start of the document
+As mentioned, we use traefik as loadbalancer for exposing monitoring software on two setups local and production.
 
-
-Traefik will automatically create certs for all the URLS described on the # Runing section in this document  
+Traefik will automatically create certs for all the URLs described in the # Running section in this document.
 
 ##### Traefik key settings
 
-[Traefik general config](./loadbalancer/traefik.yml) 
+[Traefik general config](./loadbalancer/traefik.yml)
 
 [Production services](./loadbalancer/services/prod.yaml)
 
@@ -366,53 +228,44 @@ Traefik will automatically create certs for all the URLS described on the # Runi
 
 [Middlewares config](./loadbalancer/services/middleware.yaml)
 
+#### SSL resolver
 
-####  SSL resolver
+We use acme as SSL certificate resolver with httpChallenge by default which can be used for production, our documentation also contains `cloudflare` and `namecheap` integration for dnsChallenge recommended for production grade usage.
 
-We use acme as SSL certificate resolver with httpChallenge by default which can be used for production, our documentation also contains `cloudflare` and `namecheap` integration for dnsChallenge recommended for production grade usage
-
-For more information please check  [traefik config](./loadbalancer/traefik.yml) on the section https-resolver, below you'll find details about the https-resolvers described in this file: 
+For more information please check [traefik config](./loadbalancer/traefik.yml) on the section https-resolver, below you'll find details about the https-resolvers described in this file:
 
 *https-resolver*
 
-It's the one used by default for production grade SSL, validation it's based on httpChallenge validation 
-
+It's the one used by default for production grade SSL, validation is based on httpChallenge validation.
 
 *cloudflare*
 
-It's the recommended one (or any compatible https DNS resolver for your provider) since DNS resolver it's way more effective than httpChallenge
+It's the recommended one (or any compatible https DNS resolver for your provider) since DNS resolver is way more effective than httpChallenge.
 
 *namecheap*
 
-Added for educational purposes
+Added for educational purposes.
 
 For more information about https-resolvers please refer to [traefik https-resolvers](https://doc.traefik.io/traefik/reference/install-configuration/tls/certificate-resolvers/overview/)
 
-
-#### Basic AUTH
-
-By default wallet endpoints are accessed using:
-
-username: canopy
-passwd: canopy 
-
- 
-For customizing the loadbalancer basic auth access for production purposes on wallet production endpoints, create a custom password using the following command:
-
-``` bash
-htpasswd -nb  canopy canopy
-```
-
-Which will print a username and a hashed password that you need to replace it on [middleware.yaml](./loadbalancer/services/middleware.yaml)
-
-After you save this file, traefik will automatically reload and allow the new password to be used right away on your production environment
-
-
 #### Loki
 
-We use loki for logs which takes all the stdout from the containers and sends it to the loki container. more info on (docker-compose.yaml)[./docker-compose.yaml]
+We use loki for logs which takes all the stdout from the containers and sends it to the loki container. More info on (docker-compose.yaml)[./docker-compose.yaml]
 
 [Loki config](./monitoring/loki/config.yaml)
 
+For ex.: to access loki logs after you executed the docker-compose up command you should see it [here](http://localhost:3000/explore?schemaVersion=1&panes=%7B%225v4%22:%7B%22datasource%22:%22beh1gkva12hvkd%22,%22queries%22:%5B%7B%22refId%22:%22A%22,%22expr%22:%22%7Bcompose_service%3D%5C%22blackbox%5C%22%7D%20%7C%3D%20%60%60%22,%22queryType%22:%22range%22,%22datasource%22:%7B%22type%22:%22loki%22,%22uid%22:%22beh1gkva12hvkd%22%7D,%22editorMode%22:%22builder%22,%22direction%22:%22backward%22%7D%5D,%22range%22:%7B%22from%22:%22now-1h%22,%22to%22:%22now%22%7D%7D%7D&orgId=1)
 
-For ex.: to access loki logs on node1 after you executed the docker-compose up command you should see it [here](http://localhost:3000/explore?schemaVersion=1&panes=%7B%225v4%22:%7B%22datasource%22:%22beh1gkva12hvkd%22,%22queries%22:%5B%7B%22refId%22:%22A%22,%22expr%22:%22%7Bcompose_service%3D%5C%22node2%5C%22%7D%20%7C%3D%20%60%60%22,%22queryType%22:%22range%22,%22datasource%22:%7B%22type%22:%22loki%22,%22uid%22:%22beh1gkva12hvkd%22%7D,%22editorMode%22:%22builder%22,%22direction%22:%22backward%22%7D%5D,%22range%22:%7B%22from%22:%22now-1h%22,%22to%22:%22now%22%7D%7D%7D&orgId=1)
+## What is being monitored
+
+This monitoring stack is specifically designed to monitor poktpool.com and includes:
+
+1. **Website Availability**: Continuous monitoring of poktpool.com and www.poktpool.com
+2. **Response Times**: Tracking of website and API response times
+3. **SSL Certificate Status**: Monitoring SSL certificate validity and expiry
+4. **API Health**: Monitoring of POKTpool API endpoints (if available)
+5. **System Resources**: CPU, memory, and disk usage of the monitoring server
+6. **Container Metrics**: Performance metrics of all monitoring containers
+7. **Load Balancer Metrics**: Traefik performance and routing statistics
+
+The monitoring provides real-time alerts and historical data to ensure poktpool.com remains available and performs optimally.

@@ -11,7 +11,7 @@ providers:
       path: /etc/grafana/dashboards
       foldersFromFilesStructure: true
       folders:
-        - name: Canopy
-          path: /etc/grafana/dashboards/canopy
+        - name: POKTpool
+          path: /etc/grafana/dashboards/poktpool
         - name: Infrastructure
           path: /etc/grafana/dashboards/infrastructure
