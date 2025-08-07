@@ -1,0 +1,330 @@
+apiVersion: 1
+groups:
+    - orgId: 1
+      name: poktpool-website
+      folder: poktpool
+      interval: 1m
+      rules:
+        # POKTpool Website Availability
+        - uid: poktpool_website_down
+          title: POKTpool Website Down
+          condition: C
+          data:
+            - refId: A
+              relativeTimeRange:
+                from: 300
+                to: 0
+              datasourceUid: PBFA97CFB590B2093
+              model:
+                expr: probe_success{job="blackbox_poktpool_website_check"} == 0
+                instant: true
+                intervalMs: 15000
+                maxDataPoints: 43200
+                refId: A
+            - refId: C
+              datasourceUid: __expr__
+              model:
+                conditions:
+                    - evaluator:
+                        params: [0]
+                        type: gt
+                      operator:
+                        type: and
+                      query:
+                        params: [C]
+                      reducer:
+                        params: []
+                        type: last
+                      type: query
+                datasource:
+                    type: __expr__
+                    uid: __expr__
+                expression: A
+                intervalMs: 1000
+                maxDataPoints: 43200
+                refId: C
+                type: threshold
+          noDataState: NoData
+          execErrState: Error
+          annotations:
+            description: "POKTpool website is not responding to health checks"
+            summary: "POKTpool website is down"
+          labels:
+            severity: critical
+            service: poktpool-website
+          isPaused: false
+          notification_settings:
+            receiver: Discord Alerts
+
+        # POKTpool Website Response Time
+        - uid: poktpool_website_slow
+          title: POKTpool Website Slow Response
+          condition: C
+          data:
+            - refId: A
+              relativeTimeRange:
+                from: 300
+                to: 0
+              datasourceUid: PBFA97CFB590B2093
+              model:
+                expr: probe_duration_seconds{job="blackbox_poktpool_website_check"} > 5
+                instant: true
+                intervalMs: 15000
+                maxDataPoints: 43200
+                refId: A
+            - refId: C
+              datasourceUid: __expr__
+              model:
+                conditions:
+                    - evaluator:
+                        params: [0]
+                        type: gt
+                      operator:
+                        type: and
+                      query:
+                        params: [C]
+                      reducer:
+                        params: []
+                        type: last
+                      type: query
+                datasource:
+                    type: __expr__
+                    uid: __expr__
+                expression: A
+                intervalMs: 1000
+                maxDataPoints: 43200
+                refId: C
+                type: threshold
+          noDataState: NoData
+          execErrState: Error
+          annotations:
+            description: "POKTpool website response time is above 5 seconds"
+            summary: "POKTpool website is slow"
+          labels:
+            severity: warning
+            service: poktpool-website
+          isPaused: false
+          notification_settings:
+            receiver: Discord Alerts
+
+    # POKTpool API Monitoring
+    - orgId: 1
+      name: poktpool-api
+      folder: poktpool
+      interval: 1m
+      rules:
+        # POKTpool API Health Check
+        - uid: poktpool_api_down
+          title: POKTpool API Down
+          condition: C
+          data:
+            - refId: A
+              relativeTimeRange:
+                from: 300
+                to: 0
+              datasourceUid: PBFA97CFB590B2093
+              model:
+                expr: probe_success{job="blackbox_poktpool_api_check"} == 0
+                instant: true
+                intervalMs: 15000
+                maxDataPoints: 43200
+                refId: A
+            - refId: C
+              datasourceUid: __expr__
+              model:
+                conditions:
+                    - evaluator:
+                        params: [0]
+                        type: gt
+                      operator:
+                        type: and
+                      query:
+                        params: [C]
+                      reducer:
+                        params: []
+                        type: last
+                      type: query
+                datasource:
+                    type: __expr__
+                    uid: __expr__
+                expression: A
+                intervalMs: 1000
+                maxDataPoints: 43200
+                refId: C
+                type: threshold
+          noDataState: NoData
+          execErrState: Error
+          annotations:
+            description: "POKTpool API endpoints are not responding"
+            summary: "POKTpool API is down"
+          labels:
+            severity: critical
+            service: poktpool-api
+          isPaused: false
+          notification_settings:
+            receiver: Discord Alerts
+
+        # POKTpool API Response Time
+        - uid: poktpool_api_slow
+          title: POKTpool API Slow Response
+          condition: C
+          data:
+            - refId: A
+              relativeTimeRange:
+                from: 300
+                to: 0
+              datasourceUid: PBFA97CFB590B2093
+              model:
+                expr: probe_duration_seconds{job="blackbox_poktpool_api_check"} > 3
+                instant: true
+                intervalMs: 15000
+                maxDataPoints: 43200
+                refId: A
+            - refId: C
+              datasourceUid: __expr__
+              model:
+                conditions:
+                    - evaluator:
+                        params: [0]
+                        type: gt
+                      operator:
+                        type: and
+                      query:
+                        params: [C]
+                      reducer:
+                        params: []
+                        type: last
+                      type: query
+                datasource:
+                    type: __expr__
+                    uid: __expr__
+                expression: A
+                intervalMs: 1000
+                maxDataPoints: 43200
+                refId: C
+                type: threshold
+          noDataState: NoData
+          execErrState: Error
+          annotations:
+            description: "POKTpool API response time is above 3 seconds"
+            summary: "POKTpool API is slow"
+          labels:
+            severity: warning
+            service: poktpool-api
+          isPaused: false
+          notification_settings:
+            receiver: Discord Alerts
+
+    # POKTpool SSL Certificate Monitoring
+    - orgId: 1
+      name: poktpool-ssl
+      folder: poktpool
+      interval: 1m
+      rules:
+        # SSL Certificate Issues
+        - uid: poktpool_ssl_issues
+          title: POKTpool SSL Certificate Issues
+          condition: C
+          data:
+            - refId: A
+              relativeTimeRange:
+                from: 300
+                to: 0
+              datasourceUid: PBFA97CFB590B2093
+              model:
+                expr: probe_success{job="blackbox_poktpool_ssl_check"} == 0
+                instant: true
+                intervalMs: 15000
+                maxDataPoints: 43200
+                refId: A
+            - refId: C
+              datasourceUid: __expr__
+              model:
+                conditions:
+                    - evaluator:
+                        params: [0]
+                        type: gt
+                      operator:
+                        type: and
+                      query:
+                        params: [C]
+                      reducer:
+                        params: []
+                        type: last
+                      type: query
+                datasource:
+                    type: __expr__
+                    uid: __expr__
+                expression: A
+                intervalMs: 1000
+                maxDataPoints: 43200
+                refId: C
+                type: threshold
+          noDataState: NoData
+          execErrState: Error
+          annotations:
+            description: "POKTpool SSL certificate has issues or is expiring soon"
+            summary: "POKTpool SSL certificate issues"
+          labels:
+            severity: critical
+            service: poktpool-ssl
+          isPaused: false
+          notification_settings:
+            receiver: Discord Alerts
+
+    # POKTpool Content Monitoring
+    - orgId: 1
+      name: poktpool-content
+      folder: poktpool
+      interval: 1m
+      rules:
+        # Website Content Issues
+        - uid: poktpool_content_issues
+          title: POKTpool Content Issues
+          condition: C
+          data:
+            - refId: A
+              relativeTimeRange:
+                from: 300
+                to: 0
+              datasourceUid: PBFA97CFB590B2093
+              model:
+                expr: probe_failed_due_to_regex{job="blackbox_poktpool_website_check"} == 1
+                instant: true
+                intervalMs: 15000
+                maxDataPoints: 43200
+                refId: A
+            - refId: C
+              datasourceUid: __expr__
+              model:
+                conditions:
+                    - evaluator:
+                        params: [0]
+                        type: gt
+                      operator:
+                        type: and
+                      query:
+                        params: [C]
+                      reducer:
+                        params: []
+                        type: last
+                      type: query
+                datasource:
+                    type: __expr__
+                    uid: __expr__
+                expression: A
+                intervalMs: 1000
+                maxDataPoints: 43200
+                refId: C
+                type: threshold
+          noDataState: NoData
+          execErrState: Error
+          annotations:
+            description: "POKTpool website content does not match expected patterns"
+            summary: "POKTpool content issues detected"
+          labels:
+            severity: warning
+            service: poktpool-content
+          isPaused: false
+          notification_settings:
+            receiver: Discord Alerts
