@@ -1,30 +1,40 @@
 apiVersion: 1
 contactPoints:
     - orgId: 1
-      name: Discord alert
+      name: Discord Alerts
       receivers:
-        - uid: aekh80lc9qznka
+        - uid: discord-alerts-receiver
           type: discord
           settings:
-            avatar_url: https://miro.medium.com/v2/da:true/resize:fit:1200/0*ZjYSm_q36J4KChdn
+            avatar_url: https://cdn.discordapp.com/attachments/123456789/123456789/alert-bot.png
             message: |-
                 {{ define "alerts.message" -}}
                   {{ if .Alerts.Firing -}}
-                    {{ len .Alerts.Firing }} firing alert(s)
+                    🔴 **{{ len .Alerts.Firing }} Firing Alert(s)**
                     {{ template "alerts.summarize" .Alerts.Firing }}
                   {{- end }}
                   {{- if .Alerts.Resolved -}}
-                    {{ len .Alerts.Resolved }} resolved alert(s)
+                    ✅ **{{ len .Alerts.Resolved }} Resolved Alert(s)**
                     {{ template "alerts.summarize" .Alerts.Resolved }}
                   {{- end }}
                 {{- end }}
 
                 {{ define "alerts.summarize" -}}
                   {{ range . -}}
-                  - {{ index .Annotations "summary" }}
+                  **{{ index .Labels "alertname" }}**
+                  • **Instance:** {{ index .Labels "instance" }}
+                  • **Severity:** {{ index .Labels "severity" }}
+                  • **Summary:** {{ index .Annotations "summary" }}
+                  {{ if index .Annotations "description" }}
+                  • **Description:** {{ index .Annotations "description" }}
+                  {{ end }}
+                  {{ if index .Annotations "value" }}
+                  • **Value:** {{ index .Annotations "value" }}
+                  {{ end }}
+                  
                   {{ end }}
                 {{ end }}
-            title: '{{ template "default.title" . }}'
-            url: YOUR-DISCORD-CHANNEL
+            title: '🚨 POKTpool Monitoring Alert'
+            url: ${DISCORD_WEBHOOK_URL}
             use_discord_username: false
           disableResolveMessage: false

@@ -118,7 +118,9 @@ make logs-infrastructure
 
 - Customize alerting rules in `monitoring/grafana/provisioning/alerting/`
 - Add more monitoring targets in `monitoring/prometheus/prometheus.yml`
-- Configure notification channels (Discord, PagerDuty, etc.)
+- Configure notification channels:
+  - **Discord**: Run `make setup-discord` or see [DISCORD_SETUP.md](DISCORD_SETUP.md)
+  - **PagerDuty**: Edit `monitoring/grafana/provisioning/alerting/pagerduty-alert.yaml`
 - Set up backup and retention policies
 
 For detailed configuration, see the main [README.md](README.md). 

@@ -43,8 +43,17 @@ sudo docker plugin install grafana/loki-docker-driver --alias loki
 
 In order to correctly receive the infrastructure and POKTpool alerts on this setup stack you should configure the discord and the pagerduty notification channel configs:
 
+#### Discord Alerts Setup
+For detailed Discord setup instructions, see: [Discord Setup Guide](./DISCORD_SETUP.md)
+
+Quick setup:
+1. Create a Discord webhook in your server settings
+2. Update the `DISCORD_WEBHOOK_URL` in your `.env` file
+3. Restart the monitoring stack
+
 [Discord channel webhook](./monitoring/grafana/provisioning/alerting/discord-alert.yaml#L28)
 
+#### PagerDuty Alerts Setup
 [Pagerduty APIKEY](./monitoring/grafana/provisioning/alerting/pagerduty-alert.yaml#L9)
 
 ### Required Ports
@@ -90,6 +99,25 @@ sudo make reset
 ## Production
 
 This stack lets you run a production deployment of the POKTpool monitoring stack by just changing a small number of settings shown below:
+
+### Ubuntu Server Deployment
+
+For Ubuntu server deployment, see the comprehensive guide: [Ubuntu Deployment Guide](./UBUNTU_DEPLOYMENT.md)
+
+Quick Ubuntu setup:
+```bash
+# Clone and setup
+git clone https://github.com/your-username/poktpoolmonitoring.git
+cd poktpoolmonitoring/monitoring-stack
+chmod +x setup.sh setup-discord.sh
+./setup.sh
+
+# Configure Discord alerts (optional)
+make setup-discord
+
+# Start the stack
+make up
+```
 
 ### Step 1: Define your env variables
 

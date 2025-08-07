@@ -51,3 +51,7 @@ clean:
 	rm -rf monitoring/loki/data/*
 	rm -rf monitoring/grafana/data/*
 	rm -rf monitoring/prometheus/data/*
+
+setup-discord:
+	@echo "🎯 Setting up Discord alerts..."
+	@./setup-discord.sh
